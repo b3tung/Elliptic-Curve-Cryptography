@@ -3,9 +3,10 @@ import java.lang.Math;
 
 class ecc {
 
-    public int coeff_a;
-    public int coeff_b;
-    public int prime_modulo;
+    public int coeff_a = 0;
+    public int coeff_b = 0;
+    public int prime_modulo = 2;
+    
     class coords {
         private int x;
         private int y;
@@ -67,10 +68,10 @@ class ecc {
             }
             else{
                 denom = this.y * 2;
-                slope = (3*this.x*this.x + coeff_a)*modInverse(denom, prime_modulo) % prime_modulo;
+                slope = (3*(int)Math.pow(this.x,2) + coeff_a)*modInverse(denom, prime_modulo) % prime_modulo;
             }
             slope = (slope + prime_modulo) % prime_modulo;
-            new_x = (((slope*slope - this.x - op.x) % prime_modulo) + prime_modulo) % prime_modulo;
+            new_x = (((int)(Math.pow(slope, 2) - this.x - op.x) % prime_modulo) + prime_modulo) % prime_modulo;
             new_y = (((slope*(this.x - new_x) - this.y) % prime_modulo) + prime_modulo) % prime_modulo;
             return new coords(new_x, new_y);
         }
@@ -83,6 +84,8 @@ class ecc {
         public void negation(){
             y = -y;
         }
+
+        
     }
 
     public static void main(String [] args){
@@ -92,22 +95,49 @@ class ecc {
 
     public void run(){
         Scanner reader = new Scanner(System.in);
-        System.out.println("Equation of elliptic curve is y^2 mod p = x^3 + ax + b mod p. \nEnter coefficient a: ");
-        coeff_a = reader.nextInt();
-        System.out.println("Enter coeffecient b: ");
-        coeff_b = reader.nextInt();
-        System.out.println("Enter prime modulo: ");
-        prime_modulo = reader.nextInt();
+        while(singular()){
+            System.out.println("Equation of elliptic curve is y^2 mod p = x^3 + ax + b mod p. \nEnter coefficient a: ");
+            coeff_a = reader.nextInt();
+            System.out.println("Enter coeffecient b: ");
+            coeff_b = reader.nextInt();
+            if(singular()){
+                System.out.println("Equation of elliptic curve is singular. Enter new coefficients such that 4a^3 != 27b^2");
+            }
+        }
+
+        while(!isPrime(prime_modulo)){
+            System.out.println("Enter prime modulo: ");
+            prime_modulo = reader.nextInt();
+            if(!isPrime(prime_modulo)){
+                System.out.println("Enter a prime number");
+            }
+        }
         reader.close();
         System.out.println("Equation has form y^2 mod " + prime_modulo + " = x^3 + " + coeff_a + "x + " + coeff_b + " mod " + prime_modulo);
+        
 
         coords P = new coords(3, 10);
         coords Q = new coords(9, 7);
         P.add(Q);
     }
 
+    private boolean isPrime(int num){
+        for(int i =0; i < (int)Math.sqrt(num); i++){
+            if(num % i == 0){
+                return false;
+            }
+        }
+        return true;
+    }
 
+    private boolean singular(){
+        if(4*Math.pow(coeff_a, 3) == 27*Math.pow(coeff_b, 2)){
+            return true;
+        }
 
+        return false;
+
+    }
 
 
     private String encryption(String data){
