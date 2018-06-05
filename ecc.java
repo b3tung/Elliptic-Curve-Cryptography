@@ -6,11 +6,12 @@ class ecc {
     public int coeff_a = 0;
     public int coeff_b = 0;
     public int prime_modulo = 2;
-    
+
     class coords {
         private int x;
         private int y;
 
+        //function to find the greatest common divisor (gcd) of two numbers 
         private int gcd(int a, int b) 
         {
             if (a == 0) {
@@ -20,7 +21,7 @@ class ecc {
             return gcd(b % a, a);
         }
 
-        //private function to solve for modulo inverse using fermat's little theorem
+        //function to solve for modulo inverse using fermat's little theorem
         //a^-1 = a^(n-2) mod n
         private int modInverse(int a, int n){
             if( gcd(Math.abs(a), n) != 1){
@@ -32,6 +33,7 @@ class ecc {
             return power(a, n-2, n);
         }
 
+        //function to find x^y mod m
         private int power(int x,int y,int m)
         {
             int result = 1;
@@ -41,24 +43,29 @@ class ecc {
             return result;
         }
         
+        //constructor
         public coords(int x, int y){
             super();
             this.x = x;
             this.y = y;
         }   
 
+        //getter method for x_coordinate
         public int get_x(){
             return x;
         }
 
+        //getter method for y_coordinate
         public int get_y(){
             return y;
         }
 
+        //returns whether or not two coordinates are equal
         public boolean equals(coords op){
             return (this.x == op.get_x() && this.y == op.get_y());
         }
 
+        //'adds' two points together and returns a third point on the curve
         public coords add(coords op){
             int slope = 0;
             int new_x, new_y, denom;
@@ -76,11 +83,13 @@ class ecc {
             return new coords(new_x, new_y);
         }
 
+        //'subtracts' two methods i.e. P - Q = P + (-Q)
         public coords subtract(coords op){
             op.negation();
             return this.add(op);
         }
 
+        //negates a point; P -> -P
         public void negation(){
             y = -y;
         }
@@ -95,7 +104,7 @@ class ecc {
 
     public void run(){
         Scanner reader = new Scanner(System.in);
-        while(singular()){
+        do{
             System.out.println("Equation of elliptic curve is y^2 mod p = x^3 + ax + b mod p. \nEnter coefficient a: ");
             coeff_a = reader.nextInt();
             System.out.println("Enter coeffecient b: ");
@@ -103,15 +112,16 @@ class ecc {
             if(singular()){
                 System.out.println("Equation of elliptic curve is singular. Enter new coefficients such that 4a^3 != 27b^2");
             }
-        }
+        }while(singular());
 
-        while(!isPrime(prime_modulo)){
+        do{
             System.out.println("Enter prime modulo: ");
             prime_modulo = reader.nextInt();
             if(!isPrime(prime_modulo)){
-                System.out.println("Enter a prime number");
+                System.out.println("Not a prime number, please enter another number");
             }
-        }
+        }while(!isPrime(prime_modulo));
+
         reader.close();
         System.out.println("Equation has form y^2 mod " + prime_modulo + " = x^3 + " + coeff_a + "x + " + coeff_b + " mod " + prime_modulo);
         
@@ -122,7 +132,10 @@ class ecc {
     }
 
     private boolean isPrime(int num){
-        for(int i =0; i < (int)Math.sqrt(num); i++){
+        if(num %2 == 0){
+            return false;
+        }
+        for(int i = 3; i*i <= num ; i+=2){
             if(num % i == 0){
                 return false;
             }
