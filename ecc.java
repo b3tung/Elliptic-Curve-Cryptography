@@ -11,6 +11,15 @@ class ecc {
         private int x;
         private int y;
 
+        //constructor
+        //todo: check if points are on curve
+        //todo: create default constructor to randomly create points on curve
+        public coords(int x, int y){
+            super();
+            this.x = x;
+            this.y = y;
+        } 
+
         //function to find the greatest common divisor (gcd) of two numbers 
         private int gcd(int a, int b) 
         {
@@ -19,6 +28,16 @@ class ecc {
             }
 
             return gcd(b % a, a);
+        }
+
+        //"zero" point on an elliptic curve
+        private coords zero(){
+            return new coords(Integer.MAX_VALUE, Integer.MAX_VALUE);
+        }
+
+        //returns whether or not a point is zero
+        private boolean isZero(){
+            return x==Integer.MAX_VALUE || y==Integer.MAX_VALUE;
         }
 
         //function to solve for modulo inverse using fermat's little theorem
@@ -42,14 +61,7 @@ class ecc {
             }
             return result;
         }
-        
-        //constructor
-        public coords(int x, int y){
-            super();
-            this.x = x;
-            this.y = y;
-        }   
-
+          
         //getter method for x_coordinate
         public int get_x(){
             return x;
@@ -83,7 +95,7 @@ class ecc {
             return new coords(new_x, new_y);
         }
 
-        //'subtracts' two methods i.e. P - Q = P + (-Q)
+        //'subtracts' two points i.e. P - Q = P + (-Q)
         public coords subtract(coords op){
             op.negation();
             return this.add(op);
@@ -92,6 +104,27 @@ class ecc {
         //negates a point; P -> -P
         public void negation(){
             y = -y;
+        }
+
+        //adds a point to itself
+        private coords point_doubling(){
+            return this.add(this);
+        }
+
+        //multiplies a point by x by using doubling and add method; 3P = P + 2P; runs log2 time 
+        public coords multiplication(int x){
+            int binary = Integer.parseInt(Integer.toBinaryString(x));
+            System.out.println(binary);
+            coords result = zero();
+            coords N = this;
+            while( binary > 0){
+                if(binary%10 == 1){
+                    result = result.add(N);
+                }
+                N = N.point_doubling();
+                binary/=10;
+            }
+            return result;
         }
 
         
@@ -125,10 +158,11 @@ class ecc {
         reader.close();
         System.out.println("Equation has form y^2 mod " + prime_modulo + " = x^3 + " + coeff_a + "x + " + coeff_b + " mod " + prime_modulo);
         
-
+        
         coords P = new coords(3, 10);
-        coords Q = new coords(9, 7);
-        P.add(Q);
+        P.multiplication(3);
+        // coords Q = new coords(9, 7);
+        // P.add(Q);
     }
 
     private boolean isPrime(int num){
