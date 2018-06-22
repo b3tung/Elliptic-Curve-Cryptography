@@ -19,7 +19,9 @@ class ecc {
             this.x = x;
             this.y = y;
         } 
-
+        public void print(){
+            System.out.println("x: " + x + " ,y: " + y);
+        }
         //function to find the greatest common divisor (gcd) of two numbers 
         private int gcd(int a, int b) 
         {
@@ -37,7 +39,7 @@ class ecc {
 
         //returns whether or not a point is zero
         private boolean isZero(){
-            return x==Integer.MAX_VALUE || y==Integer.MAX_VALUE;
+            return this.x==Integer.MAX_VALUE || this.y==Integer.MAX_VALUE;
         }
 
         //function to solve for modulo inverse using fermat's little theorem
@@ -81,7 +83,10 @@ class ecc {
         public coords add(coords op){
             int slope = 0;
             int new_x, new_y, denom;
-            if(!equals(op)){
+            if(this.isZero()){
+                return op;
+            }
+            else if(!this.equals(op)){
                 denom = this.x - op.get_x();
                 slope = (this.y - op.get_y())*modInverse(denom, prime_modulo) % prime_modulo;
             }
@@ -103,7 +108,7 @@ class ecc {
 
         //negates a point; P -> -P
         public void negation(){
-            y = -y;
+            y = prime_modulo - y;
         }
 
         //adds a point to itself
@@ -115,16 +120,16 @@ class ecc {
         public coords multiplication(int x){
             int binary = Integer.parseInt(Integer.toBinaryString(x));
             System.out.println(binary);
-            coords result = zero();
+            coords Q = zero();
             coords N = this;
             while( binary > 0){
                 if(binary%10 == 1){
-                    result = result.add(N);
+                    Q = Q.add(N);
                 }
                 N = N.point_doubling();
                 binary/=10;
             }
-            return result;
+            return Q;
         }
 
         
@@ -156,13 +161,29 @@ class ecc {
         }while(!isPrime(prime_modulo));
 
         reader.close();
-        System.out.println("Equation has form y^2 mod " + prime_modulo + " = x^3 + " + coeff_a + "x + " + coeff_b + " mod " + prime_modulo);
-        
-        
+        if(coeff_a == 0){
+            System.out.println("Equation has form y^2 mod " + prime_modulo + " = x^3 + " + coeff_b + " mod " + prime_modulo);
+        }
+        else if(coeff_a == 1){
+            if(coeff_b == 0){
+                System.out.println("Equation has form y^2 mod " + prime_modulo + " = x^3 + x + mod " + prime_modulo);
+            }
+            else{
+                System.out.println("Equation has form y^2 mod " + prime_modulo + " = x^3 + x + " + coeff_b + " mod " + prime_modulo);
+            }
+        }
+        else{
+            if(coeff_b == 0){
+                System.out.println("Equation has form y^2 mod " + prime_modulo + " = x^3 + " + coeff_a + "x mod " + prime_modulo);
+
+            }
+            else{
+                System.out.println("Equation has form y^2 mod " + prime_modulo + " = x^3 + " + coeff_a + "x + " + coeff_b + " mod " + prime_modulo);
+            }
+        }
         coords P = new coords(3, 10);
-        P.multiplication(3);
-        // coords Q = new coords(9, 7);
-        // P.add(Q);
+        coords result = P.multiplication(2);
+
     }
 
     private boolean isPrime(int num){
