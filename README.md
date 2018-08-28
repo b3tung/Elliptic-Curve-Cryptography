@@ -1,6 +1,6 @@
 Implementation of Elliptic Curve Cryptography
 
-Sources:
+Resources:
 
 https://en.wikipedia.org/wiki/Elliptic_curve_point_multiplication 
 

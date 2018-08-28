@@ -1,5 +1,7 @@
 import java.util.Scanner;
 import java.lang.Math;
+import java.util.concurrent.ThreadLocalRandom;
+import java.lang.*;
 
 class ecc {
 
@@ -20,7 +22,12 @@ class ecc {
             this.y = y;
         } 
         public void print(){
-            System.out.println("x: " + x + " ,y: " + y);
+            if(isZero()){
+                System.out.println("Zero");
+            }
+            else{
+                System.out.println("x: " + x + ", y: " + y);
+            }
         }
         //function to find the greatest common divisor (gcd) of two numbers 
         private int gcd(int a, int b) 
@@ -32,7 +39,7 @@ class ecc {
             return gcd(b % a, a);
         }
 
-        //"zero" point on an elliptic curve
+        //"zero" point on an elliptic curve. identity element
         private coords zero(){
             return new coords(Integer.MAX_VALUE, Integer.MAX_VALUE);
         }
@@ -80,17 +87,27 @@ class ecc {
         }
 
         //'adds' two points together and returns a third point on the curve
+        //returns itself when argument is identity element
+        //returns identity element ('zero') if: both coords share the same x or self-adding and point has y=0
+
         public coords add(coords op){
             int slope = 0;
             int new_x, new_y, denom;
             if(this.isZero()){
                 return op;
             }
+            
             else if(!this.equals(op)){
+                if(this.x == op.x){
+                    return zero();
+                }
                 denom = this.x - op.get_x();
                 slope = (this.y - op.get_y())*modInverse(denom, prime_modulo) % prime_modulo;
             }
             else{
+                if(this.y == 0){
+                    return zero();
+                }
                 denom = this.y * 2;
                 slope = (3*(int)Math.pow(this.x,2) + coeff_a)*modInverse(denom, prime_modulo) % prime_modulo;
             }
@@ -119,12 +136,14 @@ class ecc {
         //multiplies a point by x by using doubling and add method; 3P = P + 2P; runs log2 time 
         public coords multiplication(int x){
             int binary = Integer.parseInt(Integer.toBinaryString(x));
-            System.out.println(binary);
             coords Q = zero();
             coords N = this;
             while( binary > 0){
                 if(binary%10 == 1){
                     Q = Q.add(N);
+                    if(Q.isZero()){
+                        return zero();
+                    }
                 }
                 N = N.point_doubling();
                 binary/=10;
@@ -148,7 +167,7 @@ class ecc {
             System.out.println("Enter coeffecient b: ");
             coeff_b = reader.nextInt();
             if(singular()){
-                System.out.println("Equation of elliptic curve is singular. Enter new coefficients such that 4a^3 != 27b^2");
+                System.out.println("Equation of elliptic curve is singular. Enter new coefficients such that 4a^3 + 27b^2 != 0");
             }
         }while(singular());
 
@@ -181,9 +200,9 @@ class ecc {
                 System.out.println("Equation has form y^2 mod " + prime_modulo + " = x^3 + " + coeff_a + "x + " + coeff_b + " mod " + prime_modulo);
             }
         }
-        coords P = new coords(3, 10);
-        coords result = P.multiplication(2);
-
+        coords base_point = base_point_generator();
+        System.out.println("Base point generated: ");
+        base_point.print();
     }
 
     private boolean isPrime(int num){
@@ -199,7 +218,7 @@ class ecc {
     }
 
     private boolean singular(){
-        if(4*Math.pow(coeff_a, 3) == 27*Math.pow(coeff_b, 2)){
+        if(4*Math.pow(coeff_a, 3) + 27*Math.pow(coeff_b, 2) == 0 ){
             return true;
         }
 
@@ -207,21 +226,15 @@ class ecc {
 
     }
 
+    private coords base_point_generator(){ //generator [0, p-1]
+        int rhs;
+        int base_point_x;
+        do{
+            int randomNum = ThreadLocalRandom.current().nextInt(0, prime_modulo);
+            base_point_x = randomNum;
+            rhs = ((int)Math.pow(base_point_x, 3) + coeff_a*base_point_x + coeff_b)%prime_modulo;        
+        }while(Math.sqrt(rhs)*10%10 != 0);
 
-    private String encryption(String data){
-
-        return null;
+        return new coords(base_point_x, (int)Math.sqrt(rhs));
     }
-
-    private String decryption(String data){
-        return null;
-    }
-
-    private void keyGenerator(){
-
-    }
-
-    
-
-
 }
